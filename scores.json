@@ -1,0 +1,8 @@
+{% for score in scores %}
+	var index = '{{score.number.id()}}'.replace('i', '');
+	var scorer = '{{score.scorer}}';
+	var goals1 = '{{score.goals1}}';
+	var goals2 = '{{score.goals2}}';
+	scores[scorer] = scores[scorer] || [];
+	scores[scorer][index] = [goals1, goals2];
+{% endfor %}

@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+  <head>
+		<title>Copa 4 America</title>
+		<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+		<script>
+				var scores = {};
+				{% for score in scores %}
+					var index = '{{score.number}}';
+					var scorer = '{{score.scorer}}';
+					var goals1 = '{{score.goals1}}';
+					var goals2 = '{{score.goals2}}';
+					scores[scorer] = scores[scorer] || [];
+					scores[scorer][index] = [goals1, goals2];
+				{% endfor %}
+			(function($, undefined) {
+				$(document).ready(function() {
+					var updateScores = function() {
+						$('#bet').fadeOut('slow', function() {
+							var scorer = $('#bet nav a.selected').text();
+							$('#bet input').val('0');
+							if (scores[scorer]) {
+								$('#bet input').each(function(i) {
+									var m = i % 8;
+									if (m <= 3) {
+										$(this).val(scores[scorer][(Math.floor(i / 8) * 4) + m][0]);
+									} else {
+										$(this).val(scores[scorer][(Math.floor(i / 8) * 4) + (m % 4)][1]);
+									}
+								});
+							}
+							$('#bet').fadeIn();
+						});
+					};
+
+
+					$('#bet nav a').on('click', function() {
+						$('#bet nav a').removeClass('selected');
+						$(this).addClass('selected');
+						updateScores();
+					});
+					updateScores();
+
+					var markNav = function() {
+						if ($('#bet').position().top - 200 > $(document).scrollTop()) {
+							$('header nav a').removeClass('selected');
+							$('header nav a:eq(0)').addClass('selected');
+						} else {
+							$('header nav a').removeClass('selected');
+							$('header nav a:eq(1)').addClass('selected');
+						}
+					};
+					$(document).on('scroll', markNav);
+					markNav();
+
+					var t;
+					$('input').on('change', function() {
+						var goals1s = [];
+						var goals2s = [];
+						$('#bet input').each(function(i) {
+							var m = i % 8;
+							if (m <= 3) {
+								goals1s.push($(this).val() || 0);
+							} else {
+								goals2s.push($(this).val() || 0);
+							}
+						});
+						$.post('/save', {
+							scorer: $('.scorers .selected').text(),
+							goals1s: goals1s,
+							goals2s: goals2s
+						}, function(response) {
+							scores = response;
+							$('.saved').fadeIn();
+							clearTimeout(t);
+							t = setTimeout(function() { $('.saved').fadeOut();}, 2000);
+						}, 'json');
+					});
+
+					
+				});
+			})(window.jQuery);
+		</script>
+    <style type="text/css">
+      body {
+        padding-top: 120px;
+        padding-bottom: 40px;
+        background-color: black;
+        color: white;
+        font-family: 'Open Sans', sans-serif;
+        font-weight: 300;
+      }
+			a:link, a:visited, a:hover, a:active {
+				color: inherit;
+				text-decoration: inherit;
+			}
+			header {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 85px;
+				background-color: black;
+				padding-bottom: 20px;
+			}
+			header div {
+				width: 980px;
+				margin: 0 auto;
+			}
+			header h1 a {
+				font-weight: 300;
+				font-size: 40px;
+				float: left;
+			}
+			header nav {
+				float: right;
+				bottom: 0;
+				font-size: 30px;
+				text-transform: uppercase;
+				margin-top: 22px;
+			}
+			header nav a {
+				margin-right: 20px;
+				width: 150px;
+				text-align: center;
+				display: inline-block;
+				border-right: 1px solid white;
+			}
+			#chart {
+				width: 1020px;
+				margin: 0 auto;
+			}
+			#chart .number {
+				display: inline-block;
+				width: 230px;
+				height: 600px;
+				text-align: center;
+				color: #EDD23B;
+				font-size:200px;
+				font-weight: bold;
+				line-height: 900px;
+			}
+			#bet nav {
+				width: 1020px;
+				margin: 0 auto;
+				font-size: 30px;
+				text-transform: uppercase;
+				margin-bottom: 50px;
+			}
+			#bet nav a {
+				display: inline-block;
+				width: 230px;
+				text-align: center;
+			}
+			nav a:hover, nav a.selected {
+				background-color: white;
+				color: black;
+			}
+			#bet table {
+				width: 1300px;
+				margin: 0 auto;
+				border-collapse: collapse;
+				font-weight: bold;
+			}
+			#bet table th {
+				height: 35px;
+				border-radius: 5px;
+			}
+			#bet table td {
+				width: 120px;
+				height: 35px;
+				text-align: center;
+				border-radius: 5px;
+			}
+			#bet table .separator {
+				width: 15px;
+				height: 15px;
+				background-color: transparent;
+			}
+			#bet table .groupa {
+				background-color: #01B1AF;
+			}
+			#bet table .groupb {
+				background-color: #DE5021;
+			}
+			#bet table .groupc {
+				background-color: #9E8C28;
+			}
+			#bet table .groupd {
+				background-color: #734C2A;
+			}
+			#bet table .scores {
+				background-color: transparent;
+			}
+			#bet table .scores .score {
+				display: inline-block;
+				width: 35px;
+				height: 35px;
+				background-color: white;
+				color: black;
+				margin: 0 5px;
+			}
+			#bet table .groupa .score.real {
+				background-color: #01B1AF;
+			}
+			#bet table .groupb .score.real {
+				background-color: #DE5021;
+			}
+			#bet table .groupc .score.real {
+				background-color: #9E8C28;
+			}
+			#bet table .groupd .score.real {
+				background-color: #734C2A;
+			}
+			#bet table .scores .score.bet {
+				border: none;
+				padding: 0;
+				font-family: 'Open Sans';
+				text-align: center;
+				font-size: 16px;
+				width: 40px;
+				vertical-align: top;
+			}
+			.saved {
+				position: absolute;
+				width: 150px;
+				height: 30px;
+				font-size: 20px;
+				font-weight: bold;
+				text-align:center;
+				border-radius: 5px;
+				margin: 5px auto;
+				left: 0;
+				right: 0;
+				background-color: #3F9A71;
+			}
+    </style>
+  </head>
+  <body>
+
+		<header>
+			<div class="saved" style="display: none;">SAVED</div>
+			<div>
+				<h1><a href="/">COPA AMERICA 2016</a></h1>
+				<nav>
+					<a href="#chart">Chart</a>
+					<a href="#bet">Bet</a>
+				</nav>
+			</div>
+			<div style="clear: both"></div>
+		</header>
+
+		<section id="chart" name="chart">
+			<div class="number">
+				0
+			</div>
+			<div class="number">
+				0
+			</div>
+			<div class="number">
+				0
+			</div>
+			<div class="number">
+				0
+			</div>
+		</section>
+
+		<section id="bet" name="bet">
+			<nav class="scorers">
+				<a href="#caro" class="selected">CARO</a>
+				<a href="#seba">SEBA</a>
+				<a href="#elka">ELKA</a>
+				<a href="#mitty">MITTY</a>
+			</nav>
+			<table>
+				<thead>
+					<tr>
+						<th colspan=3 class="groupa">Group A</th>
+						<th class="separator"></th>
+						<th colspan=3 class="groupb">Group B</th>
+						<th class="separator"></th>
+						<th colspan=3 class="groupc">Group C</th>
+						<th class="separator"></th>
+						<th colspan=3 class="groupd">Group D</th>
+						<th class="separator"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr class="separator"></tr>
+					<tr class="separator"></tr>
+					<tr class="first">
+						<td class="groupa">USA</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">HAITI</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">JAMAICA</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">PANAMA</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="second">
+						<td class="groupa">COLOMBIA</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">PERU</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">VENEZUELA</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">BOLIVIA</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="separator"></tr>
+					<tr class="first">
+						<td class="groupa">COSTA RICA</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">BRAZIL</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">MEXICO</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">ARGENTINA</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="second">
+						<td class="groupa">USA</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">ECUADOR</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">URUGUAY</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">CHILE</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="separator"></tr>
+					<tr class="first">
+						<td class="groupa">USA</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">BRAZIL</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">URUGUAY</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">CHILE</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="second">
+						<td class="groupa">COSTA RICA</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">HAITI</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">VENZUELA</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">BOLIVIA</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="separator"></tr>
+					<tr class="first">
+						<td class="groupa">COLOMBIA</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">ECUADOR</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">MEXICO</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">ARGENTINA</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="second">
+						<td class="groupa">PARAGUAY</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">PERU</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">JAMAICA</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">PANAMA</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="separator"></tr>
+					<tr class="first">
+						<td class="groupa">USA</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">ECUADOR</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">MEXICO</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">CHILE</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="second">
+						<td class="groupa">PARAGUAY</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">HAITI</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">VENEZUELA</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">PANAMA</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="separator"></tr>
+					<tr class="first">
+						<td class="groupa">PARAGUAY</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">BRAZIL</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">URUGUAY</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">ARGENTINA</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+					<tr class="second">
+						<td class="groupa">COSTA RICA</td>
+						<td class="separator"></td>
+						<td class="scores groupa">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupb">PERU</td>
+						<td class="separator"></td>
+						<td class="scores groupb">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupc">JAMAICA</td>
+						<td class="separator"></td>
+						<td class="scores groupc">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+						<td class="groupd">BOLIVIA</td>
+						<td class="separator"></td>
+						<td class="scores groupd">
+							<span class="real score"></span>
+							<input type="number" class="bet score">
+						</td>
+						<td class="separator"></td>
+					</tr>
+				</tbody>
+			</table>
+		</section>
+
+  </body>
+</html>
+{% endautoescape %}
