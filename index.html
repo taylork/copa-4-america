@@ -43,18 +43,6 @@
 					});
 					updateScores();
 
-					var markNav = function() {
-						if ($('#bet').position().top - 200 > $(document).scrollTop()) {
-							$('header nav a').removeClass('selected');
-							$('header nav a:eq(0)').addClass('selected');
-						} else {
-							$('header nav a').removeClass('selected');
-							$('header nav a:eq(1)').addClass('selected');
-						}
-					};
-					$(document).on('scroll', markNav);
-					markNav();
-
 					var t;
 					$('input').on('change', function() {
 						var goals1s = [];
@@ -114,27 +102,13 @@
 				font-size: 40px;
 				float: left;
 			}
-			header nav {
-				float: right;
-				bottom: 0;
-				font-size: 30px;
-				text-transform: uppercase;
-				margin-top: 22px;
-			}
-			header nav a {
-				margin-right: 20px;
-				width: 150px;
-				text-align: center;
-				display: inline-block;
-				border-right: 1px solid white;
-			}
 			#chart {
 				width: 1020px;
 				margin: 0 auto;
 			}
 			#chart .number {
 				display: inline-block;
-				width: 230px;
+				width: 180px;
 				height: 600px;
 				text-align: center;
 				color: #EDD23B;
@@ -151,7 +125,7 @@
 			}
 			#bet nav a {
 				display: inline-block;
-				width: 230px;
+				width: 180px;
 				text-align: center;
 			}
 			nav a:hover, nav a.selected {
@@ -244,15 +218,14 @@
 			<div class="saved" style="display: none;">SAVED</div>
 			<div>
 				<h1><a href="/">COPA AMERICA 2016</a></h1>
-				<nav>
-					<a href="#chart">Chart</a>
-					<a href="#bet">Bet</a>
-				</nav>
 			</div>
 			<div style="clear: both"></div>
 		</header>
 
 		<section id="chart" name="chart">
+			<div class="number">
+				0
+			</div>
 			<div class="number">
 				0
 			</div>
@@ -273,6 +246,7 @@
 				<a href="#seba">SEBA</a>
 				<a href="#elka">ELKA</a>
 				<a href="#mitty">MITTY</a>
+				<a href="#mitty">RODRI</a>
 			</nav>
 			<table>
 				<thead>
@@ -382,7 +356,7 @@
 						<td class="separator"></td>
 					</tr>
 					<tr class="second">
-						<td class="groupa">USA</td>
+						<td class="groupa">PARAGUAY</td>
 						<td class="separator"></td>
 						<td class="scores groupa">
 							<span class="real score"></span>
@@ -596,7 +570,7 @@
 					</tr>
 					<tr class="separator"></tr>
 					<tr class="first">
-						<td class="groupa">PARAGUAY</td>
+						<td class="groupa">COLOMBIA</td>
 						<td class="separator"></td>
 						<td class="scores groupa">
 							<span class="real score"></span>
