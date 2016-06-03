@@ -3,7 +3,7 @@
 <html>
   <head>
 		<title>Copa 4 America</title>
-		<link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=Titillium+Web' rel='stylesheet' type='text/css'>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
 		<script>
 				var scores = {};
@@ -12,25 +12,42 @@
 					var scorer = '{{score.scorer}}';
 					var goals1 = '{{score.goals1}}';
 					var goals2 = '{{score.goals2}}';
+					var team1 = '{{score.team1}}';
+					var team2 = '{{score.team2}}';
 					scores[scorer] = scores[scorer] || [];
-					scores[scorer][index] = [goals1, goals2];
+					scores[scorer][index] = [goals1, goals2, team1 !== 'None' ? team1 : '', team2 !== 'None' ? team2 : ''];
 				{% endfor %}
 			(function($, undefined) {
 				$(document).ready(function() {
 					var updateScores = function() {
 						$('#bet').fadeOut('slow', function() {
 							var scorer = $('#bet nav a.selected').text();
-							$('#bet input').val('0');
+							$('#bet .groups input').val('0');
 							if (scores[scorer]) {
-								$('#bet input').each(function(i) {
+								$('#bet .groups input').each(function(i) {
 									var m = i % 8;
+									var newi;
 									if (m <= 3) {
-										$(this).val(scores[scorer][(Math.floor(i / 8) * 4) + m][0]);
+										newi = (Math.floor(i / 8) * 4) + m;
+										$(this).val(scores[scorer][newi][0]);
 									} else {
-										$(this).val(scores[scorer][(Math.floor(i / 8) * 4) + (m % 4)][1]);
+										newi = (Math.floor(i / 8) * 4) + (m % 4);
+										$(this).val(scores[scorer][newi][1]);
 									}
 								});
 							}
+							$('#bet .brackets input').val('')
+							if (scores[scorer]) {
+								$('#bet .brackets input').each(function(i) {
+									var m = i % 4;
+									var newi = Math.floor(i/4) + 24;
+									var newj = m === 0 ? 2 : m === 1 ? 0 : m === 2 ? 3 : 1;
+									if (scores[scorer][newi]) {
+										$(this).val(scores[scorer][newi][newj]);
+									}
+								});
+							}
+
 							$('#bet').fadeIn();
 						});
 					};
@@ -47,7 +64,9 @@
 					$('input').on('change', function() {
 						var goals1s = [];
 						var goals2s = [];
-						$('#bet input').each(function(i) {
+						var team1s = [];
+						var team2s = [];
+						$('#bet .groups input').each(function(i) {
 							var m = i % 8;
 							if (m <= 3) {
 								goals1s.push($(this).val() || 0);
@@ -55,10 +74,26 @@
 								goals2s.push($(this).val() || 0);
 							}
 						});
+						$('#bet .brackets input.score').each(function(i) {
+							if (i % 2) {
+								goals2s.push($(this).val() || 0);
+							} else {
+								goals1s.push($(this).val() || 0);
+							}
+						});
+						$('#bet .brackets input.team').each(function(i) {
+							if (i % 2) {
+								team2s.push($(this).val() || '');
+							} else {
+								team1s.push($(this).val() || '');
+							}
+						});
 						$.post('/save', {
 							scorer: $('.scorers .selected').text(),
 							goals1s: goals1s,
-							goals2s: goals2s
+							goals2s: goals2s,
+							team1s: team1s,
+							team2s: team2s
 						}, function(response) {
 							scores = response;
 							$('.saved').fadeIn();
@@ -77,7 +112,7 @@
         padding-bottom: 40px;
         background-color: black;
         color: white;
-        font-family: 'Open Sans', sans-serif;
+        font-family: 'Titillium Web', sans-serif;
         font-weight: 300;
       }
 			a:link, a:visited, a:hover, a:active {
@@ -101,6 +136,19 @@
 				font-weight: 300;
 				font-size: 40px;
 				float: left;
+			}
+			.saved {
+				position: absolute;
+				width: 150px;
+				height: 30px;
+				font-size: 20px;
+				font-weight: bold;
+				text-align:center;
+				border-radius: 5px;
+				margin: 5px auto;
+				left: 0;
+				right: 0;
+				background-color: #3F9A71;
 			}
 			#chart {
 				width: 1020px;
@@ -132,43 +180,43 @@
 				background-color: white;
 				color: black;
 			}
-			#bet table {
+			#bet .groups {
 				width: 1300px;
 				margin: 0 auto;
 				border-collapse: collapse;
 				font-weight: bold;
 			}
-			#bet table th {
+			#bet .groups th {
 				height: 35px;
 				border-radius: 5px;
 			}
-			#bet table td {
+			#bet .groups td {
 				width: 120px;
 				height: 35px;
 				text-align: center;
 				border-radius: 5px;
 			}
-			#bet table .separator {
+			#bet .groups .separator {
 				width: 15px;
 				height: 15px;
 				background-color: transparent;
 			}
-			#bet table .groupa {
+			#bet .groups .groupa {
 				background-color: #01B1AF;
 			}
-			#bet table .groupb {
+			#bet .groups .groupb {
 				background-color: #DE5021;
 			}
-			#bet table .groupc {
+			#bet .groups .groupc {
 				background-color: #9E8C28;
 			}
-			#bet table .groupd {
+			#bet .groups .groupd {
 				background-color: #734C2A;
 			}
-			#bet table .scores {
+			#bet .groups .scores {
 				background-color: transparent;
 			}
-			#bet table .scores .score {
+			#bet .groups .scores .score {
 				display: inline-block;
 				width: 35px;
 				height: 35px;
@@ -176,39 +224,92 @@
 				color: black;
 				margin: 0 5px;
 			}
-			#bet table .groupa .score.real {
+			#bet .groups .groupa .score.real {
 				background-color: #01B1AF;
 			}
-			#bet table .groupb .score.real {
+			#bet .groups .groupb .score.real {
 				background-color: #DE5021;
 			}
-			#bet table .groupc .score.real {
+			#bet .groups .groupc .score.real {
 				background-color: #9E8C28;
 			}
-			#bet table .groupd .score.real {
+			#bet .groups .groupd .score.real {
 				background-color: #734C2A;
 			}
-			#bet table .scores .score.bet {
+			#bet .groups .scores .score.bet {
 				border: none;
 				padding: 0;
-				font-family: 'Open Sans';
+        font-family: 'Titillium Web', sans-serif;
 				text-align: center;
 				font-size: 16px;
 				width: 40px;
 				vertical-align: top;
 			}
-			.saved {
-				position: absolute;
-				width: 150px;
-				height: 30px;
-				font-size: 20px;
+			#bet .brackets {
+				width: 1300px;
+				margin: 100px auto;
 				font-weight: bold;
-				text-align:center;
+			}
+			#bet .brackets .column {
+				height: 600px;
+				float: left;
+				width: 270px;
+				margin-left: 130px;
+			}
+			#bet .brackets .separator {
+				width: 15px;
+				height: 15px;
+				clear: both;
+			}
+			#bet .brackets .team {
+				width: 120px;
+				height: 35px;
+				line-height: 35px;
+				text-align: center;
 				border-radius: 5px;
-				margin: 5px auto;
-				left: 0;
-				right: 0;
-				background-color: #3F9A71;
+				background-color: #482538;
+				padding: 7px;
+				float: left;
+				clear: left;
+        font-family: 'Titillium Web', sans-serif;
+				font-size: 16px;
+				font-weight: bold;
+				border: none;
+				color: white;
+			}
+			#bet .brackets .score {
+				display: inline-block;
+				width: 35px;
+				height: 35px;
+				background-color: white;
+				color: black;
+				margin: 8px 5px;
+				float: right;
+			}
+			#bet .brackets .score.real {
+				background-color: #482538;
+			}
+			#bet .brackets .score.bet {
+				clear: right;
+				border: none;
+				padding: 0;
+        font-family: 'Titillium Web', sans-serif;
+				text-align: center;
+				font-size: 16px;
+				width: 40px;
+				vertical-align: top;
+			}
+			#bet .brackets .column.semi .match:first-child {
+				margin-top: 60px;
+			}
+			#bet .brackets .column.semi .separator {
+				height: 130px;
+			}
+			#bet .brackets .column.finals .match:first-child {
+				margin-top: 170px;
+			}
+			#bet .brackets .column.finals .separator {
+				height: 130px;
 			}
     </style>
   </head>
@@ -248,7 +349,7 @@
 				<a href="#mitty">MITTY</a>
 				<a href="#mitty">RODRI</a>
 			</nav>
-			<table>
+			<table class="groups">
 				<thead>
 					<tr>
 						<th colspan=3 class="groupa">Group A</th>
@@ -631,6 +732,83 @@
 					</tr>
 				</tbody>
 			</table>
+			<div class="brackets">
+				<div class="column quarters">
+					<div class="match">
+						<input class="team" placeholder="WINNER A"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+						<input class="team" placeholder="RUNNER-UP B"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+					</div>
+					<div class="separator"></div>
+					<div class="match">
+						<input class="team" placeholder="WINNER D"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+						<input class="team" placeholder="RUNNER-UP C"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+					</div>
+					<div class="separator"></div>
+					<div class="match">
+						<input class="team" placeholder="WINNER B"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+						<input class="team" placeholder="RUNNER-UP A"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+					</div>
+					<div class="separator"></div>
+					<div class="match">
+						<input class="team" placeholder="WINNER C"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+						<input class="team" placeholder="RUNNER-UP D"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+					</div>
+				</div>
+				<div class="column semi">
+					<div class="match">
+						<input class="team" placeholder="WINNER A-RB"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+						<input class="team" placeholder="WINNER D-RC"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+					</div>
+					<div class="separator"></div>
+					<div class="match">
+						<input class="team" placeholder="WINNER B-RA"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+						<input class="team" placeholder="WINNER C-RD"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+					</div>
+				</div>
+				<div class="column finals">
+					<div class="match">
+						<input class="team" placeholder="FINALS"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+						<input class="team" placeholder="FINALS"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+					</div>
+					<div class="separator"></div>
+					<div class="match">
+						<input class="team" placeholder="3RD PLACE"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+						<input class="team" placeholder="PLAYOFFS"></input>
+						<input type="number" class="bet score"></input>
+						<div class="real score"></div>
+					</div>
+				</div>
+			</div>
 		</section>
 
   </body>

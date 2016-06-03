@@ -39,6 +39,8 @@ class Score(ndb.Model):
     scorer = ndb.StringProperty(indexed=False)
     goals1 = ndb.IntegerProperty(indexed=False)
     goals2 = ndb.IntegerProperty(indexed=False)
+    team1 = ndb.StringProperty(indexed=False)
+    team2 = ndb.StringProperty(indexed=False)
 # [END greeting]
 
 
@@ -65,6 +67,8 @@ class Fixture(webapp2.RequestHandler):
         scorer = self.request.get('scorer')
         goals1s = self.request.get_all('goals1s[]')
         goals2s = self.request.get_all('goals2s[]')
+        team1s = self.request.get_all('team1s[]')
+        team2s = self.request.get_all('team2s[]')
 
         for idx in range(len(goals1s)):
             score = Score.get_or_insert(scorer + str(idx));
@@ -73,6 +77,9 @@ class Fixture(webapp2.RequestHandler):
             score.scorer = scorer
             score.goals1 = int(goals1s[idx])
             score.goals2 = int(goals2s[idx])
+            if idx > 23:
+                score.team1 = team1s[idx - 24]
+                score.team2 = team2s[idx - 24]
             score.put()
 
         scores_query = Score.query().order(Score.number)
@@ -82,6 +89,14 @@ class Fixture(webapp2.RequestHandler):
         for score in scores:
             new_scores.setdefault(score.scorer, {})
             new_scores[score.scorer][score.number] = [score.goals1, score.goals2]
+            if score.team1:
+                new_scores[score.scorer][score.number].append(score.team1)
+            else:
+                new_scores[score.scorer][score.number].append('')
+            if score.team2:
+                new_scores[score.scorer][score.number].append(score.team2)
+            else:
+                new_scores[score.scorer][score.number].append('')
 
         self.response.write(json.dumps(new_scores))
 # [END Fixture]
