@@ -81,24 +81,6 @@ class Fixture(webapp2.RequestHandler):
                 score.team1 = team1s[idx - 24]
                 score.team2 = team2s[idx - 24]
             score.put()
-
-        scores_query = Score.query().order(Score.number)
-        scores = scores_query.fetch(1000)
-
-        new_scores = {}
-        for score in scores:
-            new_scores.setdefault(score.scorer, {})
-            new_scores[score.scorer][score.number] = [score.goals1, score.goals2]
-            if score.team1:
-                new_scores[score.scorer][score.number].append(score.team1)
-            else:
-                new_scores[score.scorer][score.number].append('')
-            if score.team2:
-                new_scores[score.scorer][score.number].append(score.team2)
-            else:
-                new_scores[score.scorer][score.number].append('')
-
-        self.response.write(json.dumps(new_scores))
 # [END Fixture]
 
 

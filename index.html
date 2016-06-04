@@ -94,12 +94,19 @@
 							goals2s: goals2s,
 							team1s: team1s,
 							team2s: team2s
-						}, function(response) {
-							scores = response;
+						}, function() {
+							scores[scorer] = {};
+							for (var i = 0; i < goals1s.length; i++) {
+								scores[scorer][i] = [parseInt(goals1s[i], 10), parseInt(goals2s[i],10)];
+								if (i > 23) {
+									scores[scorer][i].push(team1s[i - 24]);
+									scores[scorer][i].push(team2s[i - 24]);
+								}
+							}
 							$('.saved').fadeIn();
 							clearTimeout(t);
 							t = setTimeout(function() { $('.saved').fadeOut();}, 2000);
-						}, 'json');
+						});
 					});
 
 					
@@ -127,6 +134,7 @@
 				height: 85px;
 				background-color: black;
 				padding-bottom: 20px;
+				z-index: 1;
 			}
 			header div {
 				width: 980px;
@@ -162,7 +170,12 @@
 				color: #EDD23B;
 				font-size:200px;
 				font-weight: bold;
-				line-height: 900px;
+				position: relative;
+			}
+			#chart .number .mover {
+				position: absolute;
+				bottom: 0px;
+				width: 100%;
 			}
 			#bet nav {
 				width: 1020px;
@@ -325,19 +338,19 @@
 
 		<section id="chart" name="chart">
 			<div class="number">
-				0
+				<div class="mover" style="bottom:10px;">1</div>
 			</div>
 			<div class="number">
-				0
+				<div class="mover" style="bottom:20px;">2</div>
 			</div>
 			<div class="number">
-				0
+				<div class="mover" style="bottom:10px;">1</div>
 			</div>
 			<div class="number">
-				0
+				<div class="mover" style="bottom:20px;">2</div>
 			</div>
 			<div class="number">
-				0
+				<div class="mover" style="bottom:10px;">1</div>
 			</div>
 		</section>
 
